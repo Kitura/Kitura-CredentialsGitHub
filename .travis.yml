@@ -1,0 +1,24 @@
+# Travis CI build file for Kitura-redis.
+# Kitura runs on OS X and Linux (Ubuntu v15.10).
+
+# whitelist (branches that should be built)
+branches:
+  only:
+    - master
+    - develop
+    - /^issue.*$/
+
+matrix:
+  include:
+    - os: linux
+      services: docker
+      sudo: required
+    - os: osx
+      osx_image: xcode8
+      sudo: required
+
+before_install:
+  - git submodule update --init --remote --merge --recursive
+
+script:
+  - ./Package-Builder/build-package.sh $TRAVIS_BRANCH $TRAVIS_BUILD_DIR
