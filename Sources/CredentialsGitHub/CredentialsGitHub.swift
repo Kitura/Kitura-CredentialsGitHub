@@ -61,11 +61,11 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
     /// - Parameter clientId: The Client ID of the app in the GitHub Developer applications.
     /// - Parameter clientSecret: The Client Secret of the app in the GitHub Developer applications.
     /// - Parameter callbackUrl: The URL that GitHub redirects back to.
-    public init (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil) {
+    public init (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String = "Kitura-CredentialsGitHub") {
         self.clientId = clientId
         self.clientSecret = clientSecret
         self.callbackUrl = callbackUrl
-        self.userAgent = userAgent ?? "Kitura-CredentialsGitHub"
+        self.userAgent = userAgent
     }
 
     /// Authenticate incoming request using GitHub web login with OAuth.
@@ -123,8 +123,8 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
                                         try profileResponse.readAllData(into: &body)
                                         jsonBody = JSON(data: body)
 
-                                        if let id = jsonBody["id"].number?.stringValue,
-                                            let name = jsonBody["name"].string {
+                                        if let id = jsonBody["id"].number?.stringValue {
+                                            let name = jsonBody["name"].stringValue
                                             let userProfile = UserProfile(id: id, displayName: name, provider: self.name)
                                             onSuccess(userProfile)
                                             return
