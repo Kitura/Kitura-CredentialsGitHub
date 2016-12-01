@@ -61,11 +61,11 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
     /// - Parameter clientId: The Client ID of the app in the GitHub Developer applications.
     /// - Parameter clientSecret: The Client Secret of the app in the GitHub Developer applications.
     /// - Parameter callbackUrl: The URL that GitHub redirects back to.
-    public init (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String = "Kitura-CredentialsGitHub") {
+    public init (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil) {
         self.clientId = clientId
         self.clientSecret = clientSecret
         self.callbackUrl = callbackUrl
-        self.userAgent = userAgent
+        self.userAgent = userAgent ?? "Kitura-CredentialsGitHub"
     }
 
     /// Authenticate incoming request using GitHub web login with OAuth.
