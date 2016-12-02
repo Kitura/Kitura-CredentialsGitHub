@@ -123,8 +123,8 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
                                         try profileResponse.readAllData(into: &body)
                                         jsonBody = JSON(data: body)
 
-                                        if let id = jsonBody["id"].number?.stringValue,
-                                            let name = jsonBody["name"].string {
+                                        if let id = jsonBody["id"].number?.stringValue {
+                                            let name = jsonBody["name"].stringValue
                                             let userProfile = UserProfile(id: id, displayName: name, provider: self.name)
                                             onSuccess(userProfile)
                                             return
