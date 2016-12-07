@@ -28,11 +28,13 @@ import Foundation
 /// Authentication using GitHub web login with OAuth.
 /// See [GitHub manual](https://developer.github.com/v3/oauth/#web-application-flow)
 /// for more information.
-public class CredentialsGitHub : CredentialsPluginProtocol {
+public class CredentialsGitHub: CredentialsPluginProtocol {
 
     private var clientId: String
 
     private var clientSecret: String
+
+    private let scopes: [String]
 
     /// The URL that GitHub redirects back to.
     public var callbackUrl: String
@@ -44,28 +46,29 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
     public private(set) var userAgent: String
 
     /// The name of the plugin.
-    public var name: String {
-        return "GitHub"
-    }
+    public let name = "GitHub"
 
     /// An indication as to whether the plugin is redirecting or not.
-    public var redirecting: Bool {
-        return true
-    }
+    public let redirecting = true
 
     /// User profile cache.
     public var usersCache: NSCache<NSString, BaseCacheElement>?
-    
+
+    /// A delegate for `UserProfile` manipulation.
+    public let userProfileDelegate: UserProfileDelegate?
+
     /// Initialize a `CredentialsGitHub` instance.
     ///
     /// - Parameter clientId: The Client ID of the app in the GitHub Developer applications.
     /// - Parameter clientSecret: The Client Secret of the app in the GitHub Developer applications.
     /// - Parameter callbackUrl: The URL that GitHub redirects back to.
-    public init (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil) {
+    public init (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil, options: [String: Any] = [:]) {
         self.clientId = clientId
         self.clientSecret = clientSecret
         self.callbackUrl = callbackUrl
+        self.scopes = options[CredentialsGitHubOptions.scopes] as? [String] ?? []
         self.userAgent = userAgent ?? "Kitura-CredentialsGitHub"
+        self.userProfileDelegate = options[CredentialsGitHubOptions.userProfileDelegate] as? UserProfileDelegate
     }
 
     /// Authenticate incoming request using GitHub web login with OAuth.
@@ -126,6 +129,11 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
                                         if let id = jsonBody["id"].number?.stringValue {
                                             let name = jsonBody["name"].stringValue
                                             let userProfile = UserProfile(id: id, displayName: name, provider: self.name)
+
+                                            if let delegate = self.userProfileDelegate {
+                                                delegate.update(userProfile: userProfile, from: jsonBody.dictionaryValue)
+                                            }
+
                                             onSuccess(userProfile)
                                             return
                                         }
@@ -153,8 +161,20 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
         }
         else {
             // Log in
+            var scopeParameters = ""
+
+            if !scopes.isEmpty {
+                scopeParameters = "&scope="
+
+                for scope in scopes {
+                    // space delimited list: https://developer.github.com/v3/oauth/#parameters
+                    // trailing space character is probably OK
+                    scopeParameters.append(scope + " ")
+                }
+            }
+
             do {
-                try response.redirect("https://github.com/login/oauth/authorize?client_id=\(clientId)&redirect_uri=\(callbackUrl)&response_type=code")
+                try response.redirect("https://github.com/login/oauth/authorize?client_id=\(clientId)&redirect_uri=\(callbackUrl)&response_type=code\(scopeParameters)")
                 inProgress()
             }
             catch {
