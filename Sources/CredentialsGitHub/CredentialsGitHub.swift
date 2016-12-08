@@ -126,9 +126,7 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
                                         try profileResponse.readAllData(into: &body)
                                         jsonBody = JSON(data: body)
 
-                                        if let id = jsonBody["id"].number?.stringValue {
-                                            let name = jsonBody["name"].stringValue
-                                            let userProfile = UserProfile(id: id, displayName: name, provider: self.name)
+                                        if let userProfile = self.createUserProfile(from: jsonBody) {
 
                                             if let delegate = self.userProfileDelegate {
                                                 delegate.update(userProfile: userProfile, from: jsonBody.dictionaryValue)
@@ -181,5 +179,62 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
                 Log.error("Failed to redirect to \(name) login page")
             }
         }
+    }
+
+    // GitHub user profile response format looks like this:
+    /*
+     {
+         "login" : "<string>",
+         "id" : <int>,
+         "avatar_url" : "<string>",
+         "gravatar_id" : "",
+         "url" : "<string>",
+         "html_url" : "<string>",
+         "followers_url" : "<string>",
+         "following_url" : "<string>",
+         "gists_url" : "<string>",
+         "starred_url" : "<string>",
+         "subscriptions_url" : "<string>",
+         "organizations_url" : "<string>",
+         "repos_url" : "<string>",
+         "events_url" : "<string>",
+         "received_events_url" : "<string>",
+         "type" : "User",
+         "site_admin" : <bool>,
+         "name" : "<string>",
+         "company" : "<string>",
+         "blog" : null,
+         "location" : null,
+         "email" : null,
+         "hireable" : null,
+         "bio" : null,
+         "public_repos" : <int>,
+         "public_gists" : <int>,
+         "followers" : <int>,
+         "following" : <int>,
+         "created_at" : "<time stamp string>",
+         "updated_at" : "<time stamp string>"
+     }
+     */
+    private func createUserProfile(from userJSON: JSON) -> UserProfile? {
+        guard let id = userJSON["id"].number?.stringValue else {
+            return nil
+        }
+
+        let name = userJSON["name"].stringValue
+
+        var userProfileEmails: [UserProfile.UserProfileEmail]?
+
+        if let email = userJSON["email"].string {
+            userProfileEmails = [UserProfile.UserProfileEmail(value: email, type: "public")]
+        }
+
+        var userProfilePhotos: [UserProfile.UserProfilePhoto]?
+
+        if let photoURL = userJSON["avatar_url"].string {
+            userProfilePhotos = [UserProfile.UserProfilePhoto(photoURL)]
+        }
+
+        return UserProfile(id: id, displayName: name, provider: self.name, emails: userProfileEmails, photos: userProfilePhotos)
     }
 }
