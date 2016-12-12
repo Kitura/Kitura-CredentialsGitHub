@@ -126,7 +126,8 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
                                         try profileResponse.readAllData(into: &body)
                                         jsonBody = JSON(data: body)
 
-                                        if let userProfile = self.createUserProfile(from: jsonBody) {
+                                        if let userDictionary = jsonBody.dictionaryObject,
+                                            let userProfile = self.createUserProfile(from: userDictionary) {
 
                                             if let delegate = self.userProfileDelegate {
                                                 delegate.update(userProfile: userProfile, from: jsonBody.dictionaryValue)
@@ -216,25 +217,25 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
          "updated_at" : "<time stamp string>"
      }
      */
-    private func createUserProfile(from userJSON: JSON) -> UserProfile? {
-        guard let id = userJSON["id"].number?.stringValue else {
+    private func createUserProfile(from userDictionary: [String: Any]) -> UserProfile? {
+        guard let id = userDictionary["id"] as? UInt64 else {
             return nil
         }
 
-        let name = userJSON["name"].stringValue
+        let name = userDictionary["name"] as? String ?? ""
 
         var userProfileEmails: [UserProfile.UserProfileEmail]?
 
-        if let email = userJSON["email"].string {
+        if let email = userDictionary["email"] as? String {
             userProfileEmails = [UserProfile.UserProfileEmail(value: email, type: "public")]
         }
 
         var userProfilePhotos: [UserProfile.UserProfilePhoto]?
 
-        if let photoURL = userJSON["avatar_url"].string {
+        if let photoURL = userDictionary["avatar_url"] as? String {
             userProfilePhotos = [UserProfile.UserProfilePhoto(photoURL)]
         }
 
-        return UserProfile(id: id, displayName: name, provider: self.name, emails: userProfileEmails, photos: userProfilePhotos)
+        return UserProfile(id: String(id), displayName: name, provider: self.name, emails: userProfileEmails, photos: userProfilePhotos)
     }
 }
