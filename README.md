@@ -6,7 +6,7 @@ Plugin for the Credentials framework that authenticate using GitHub
 ![Apache 2](https://img.shields.io/badge/license-Apache2-blue.svg?style=flat)
 
 ## Summary
-Plugin for [Kitura-Credentials](https://github.com/IBM-Swift/Kitura-Credentials) framework that authenticates using the [GitHub web login with OAuth](https://developer.github.com/v3/oauth/#web-application-flow).
+Plugin for [Kitura-Credentials](https://github.com/IBM-Swift/Kitura-Credentials) framework that authenticates using the [GitHub web login with OAuth2](https://developer.github.com/v3/oauth/#web-application-flow) API.
 
 ## Table of Contents
 * [Swift version](#swift-version)
@@ -17,14 +17,24 @@ Plugin for [Kitura-Credentials](https://github.com/IBM-Swift/Kitura-Credentials)
 The latest version of Kitura-CredentialsGitHub requires **Swift 3**. You can download this version of the Swift binaries by following this [link](https://swift.org/download/). Compatibility with other Swift versions is not guaranteed.
 
 ## Example of GitHub web login
-First, create an instance of `CredentialsGitHub` plugin and register it with `Credentials` framework:
+This guide assumes basic knowledge of `Kitura` app routing.
+
+First, set up the session middleware:
+
+```swift
+import KituraSession
+
+router.all(middleware: Session(secret: "Very very secret..."))
+```
+
+Create an instance of `CredentialsGitHub` plugin and register it with `Credentials` framework:
 
 ```swift
 import Credentials
 import CredentialsGitHub
 
 let credentials = Credentials()
-let gitCredentials = CredentialsGitHub(clientId: gitClientId, clientSecret: gitClientSecret, callbackUrl: serverUrl + "/login/github/callback", userAgent: "my-kitura-app")
+let gitCredentials = CredentialsGitHub(clientId: gitClientId, clientSecret: gitClientSecret, callbackUrl: serverUrl + "/login/github/callback", userAgent: "my-kitura-app", options: ["scopes": ["user:email"]])
 credentials.register(gitCredentials)
 ```
 
@@ -34,6 +44,7 @@ credentials.register(gitCredentials)
 - *gitClientSecret* is the Client Secret of your app in your GitHub Developer application settings
 - *callbackUrl* is used to tell the GitHub web login page where the user's browser should be redirected when the login is successful. It should be a URL handled by the server you are writing.
 - *userAgent* is an optional argument that passes along a User-Agent of your choice on API calls against GitHub. By default, `Kitura-CredentialsGitHub` is set as the User-Agent. [User-Agent is required when invoking GitHub APIs](https://developer.github.com/v3/#user-agent-required).
+- *options* is an optional dictionary (`[String: Any]`); the allowable options are listed in `CredentialsGitHubOptions`
 
 Next, specify where to redirect non-authenticated requests:
 
@@ -41,7 +52,7 @@ Next, specify where to redirect non-authenticated requests:
 credentials.options["failureRedirect"] = "/login/github"
 ```
 
-Connect `credentials` middleware to requests to `/private`:
+Connect `credentials` middleware to handle requests to a protected path on the server, such as `/private`:
 
 ```swift
 router.all("/private", middleware: credentials)

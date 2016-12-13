@@ -28,11 +28,13 @@ import Foundation
 /// Authentication using GitHub web login with OAuth.
 /// See [GitHub manual](https://developer.github.com/v3/oauth/#web-application-flow)
 /// for more information.
-public class CredentialsGitHub : CredentialsPluginProtocol {
+public class CredentialsGitHub: CredentialsPluginProtocol {
 
     private var clientId: String
 
     private var clientSecret: String
+
+    private let scopes: [String]
 
     /// The URL that GitHub redirects back to.
     public var callbackUrl: String
@@ -44,28 +46,29 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
     public private(set) var userAgent: String
 
     /// The name of the plugin.
-    public var name: String {
-        return "GitHub"
-    }
+    public let name = "GitHub"
 
     /// An indication as to whether the plugin is redirecting or not.
-    public var redirecting: Bool {
-        return true
-    }
+    public let redirecting = true
 
     /// User profile cache.
     public var usersCache: NSCache<NSString, BaseCacheElement>?
-    
+
+    /// A delegate for `UserProfile` manipulation.
+    public let userProfileDelegate: UserProfileDelegate?
+
     /// Initialize a `CredentialsGitHub` instance.
     ///
     /// - Parameter clientId: The Client ID of the app in the GitHub Developer applications.
     /// - Parameter clientSecret: The Client Secret of the app in the GitHub Developer applications.
     /// - Parameter callbackUrl: The URL that GitHub redirects back to.
-    public init (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil) {
+    public init (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil, options: [String: Any] = [:]) {
         self.clientId = clientId
         self.clientSecret = clientSecret
         self.callbackUrl = callbackUrl
+        self.scopes = options[CredentialsGitHubOptions.scopes] as? [String] ?? []
         self.userAgent = userAgent ?? "Kitura-CredentialsGitHub"
+        self.userProfileDelegate = options[CredentialsGitHubOptions.userProfileDelegate] as? UserProfileDelegate
     }
 
     /// Authenticate incoming request using GitHub web login with OAuth.
@@ -123,9 +126,13 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
                                         try profileResponse.readAllData(into: &body)
                                         jsonBody = JSON(data: body)
 
-                                        if let id = jsonBody["id"].number?.stringValue {
-                                            let name = jsonBody["name"].stringValue
-                                            let userProfile = UserProfile(id: id, displayName: name, provider: self.name)
+                                        if let userDictionary = jsonBody.dictionaryObject,
+                                            let userProfile = self.createUserProfile(from: userDictionary) {
+
+                                            if let delegate = self.userProfileDelegate {
+                                                delegate.update(userProfile: userProfile, from: jsonBody.dictionaryValue)
+                                            }
+
                                             onSuccess(userProfile)
                                             return
                                         }
@@ -153,13 +160,82 @@ public class CredentialsGitHub : CredentialsPluginProtocol {
         }
         else {
             // Log in
+            var scopeParameters = ""
+
+            if !scopes.isEmpty {
+                scopeParameters = "&scope="
+
+                for scope in scopes {
+                    // space delimited list: https://developer.github.com/v3/oauth/#parameters
+                    // trailing space character is probably OK
+                    scopeParameters.append(scope + " ")
+                }
+            }
+
             do {
-                try response.redirect("https://github.com/login/oauth/authorize?client_id=\(clientId)&redirect_uri=\(callbackUrl)&response_type=code")
+                try response.redirect("https://github.com/login/oauth/authorize?client_id=\(clientId)&redirect_uri=\(callbackUrl)&response_type=code\(scopeParameters)")
                 inProgress()
             }
             catch {
                 Log.error("Failed to redirect to \(name) login page")
             }
         }
+    }
+
+    // GitHub user profile response format looks like this:
+    /*
+     {
+         "login" : "<string>",
+         "id" : <int>,
+         "avatar_url" : "<string>",
+         "gravatar_id" : "",
+         "url" : "<string>",
+         "html_url" : "<string>",
+         "followers_url" : "<string>",
+         "following_url" : "<string>",
+         "gists_url" : "<string>",
+         "starred_url" : "<string>",
+         "subscriptions_url" : "<string>",
+         "organizations_url" : "<string>",
+         "repos_url" : "<string>",
+         "events_url" : "<string>",
+         "received_events_url" : "<string>",
+         "type" : "User",
+         "site_admin" : <bool>,
+         "name" : "<string>",
+         "company" : "<string>",
+         "blog" : null,
+         "location" : null,
+         "email" : null,
+         "hireable" : null,
+         "bio" : null,
+         "public_repos" : <int>,
+         "public_gists" : <int>,
+         "followers" : <int>,
+         "following" : <int>,
+         "created_at" : "<time stamp string>",
+         "updated_at" : "<time stamp string>"
+     }
+     */
+    private func createUserProfile(from userDictionary: [String: Any]) -> UserProfile? {
+        guard let id = userDictionary["id"] as? UInt64 else {
+            return nil
+        }
+
+        let name = userDictionary["name"] as? String ?? ""
+
+        var userProfileEmails: [UserProfile.UserProfileEmail]?
+
+        if let email = userDictionary["email"] as? String {
+            userProfileEmails = [UserProfile.UserProfileEmail(value: email, type: "public")]
+        }
+
+        var userProfilePhotos: [UserProfile.UserProfilePhoto]?
+
+        if let photoURL = userDictionary["avatar_url"] as? String {
+            userProfilePhotos = [UserProfile.UserProfilePhoto(photoURL)]
+        }
+
+        return UserProfile(id: String(id), displayName: name, provider: self.name, emails: userProfileEmails, photos: userProfilePhotos)
     }
 }
