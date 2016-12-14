@@ -15,7 +15,7 @@
  **/
 
 // MARK CredentialsGitHubOptions
-/// A list of options for authentication with Github.
+/// A list of options for authentication with GitHub.
 public struct CredentialsGitHubOptions {
     /// [GitHub access token scopes](https://developer.github.com/v3/oauth/#scopes)
     public static let scopes = "scopes"
