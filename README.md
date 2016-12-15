@@ -1,5 +1,4 @@
 # Kitura-CredentialsGitHub
-Plugin for the Credentials framework that authenticate using GitHub
 
 ![Mac OS X](https://img.shields.io/badge/os-Mac%20OS%20X-green.svg?style=flat)
 ![Linux](https://img.shields.io/badge/os-linux-green.svg?style=flat)
@@ -43,7 +42,7 @@ credentials.register(gitCredentials)
 - *gitClientId* is the Client ID of your app in your GitHub Developer application settings
 - *gitClientSecret* is the Client Secret of your app in your GitHub Developer application settings
 - *callbackUrl* is used to tell the GitHub web login page where the user's browser should be redirected when the login is successful. It should be a URL handled by the server you are writing.
-- *userAgent* is an optional argument that passes along a User-Agent of your choice on API calls against GitHub. By default, `Kitura-CredentialsGitHub` is set as the User-Agent. [User-Agent is required when invoking GitHub APIs](https://developer.github.com/v3/#user-agent-required).
+- *userAgent* is an optional argument that passes along a User-Agent of your choice on API calls against GitHub. By default, `Kitura-CredentialsGitHub` is set as the `User-Agent` header. [`User-Agent` header is required when invoking GitHub APIs](https://developer.github.com/v3/#user-agent-required).
 - *options* is an optional dictionary (`[String: Any]`); the allowable options are listed in `CredentialsGitHubOptions`
 
 Next, specify where to redirect non-authenticated requests:
@@ -57,7 +56,7 @@ Connect `credentials` middleware to handle requests to a protected path on the s
 ```swift
 router.all("/private", middleware: credentials)
 router.get("/private/data", handler: { request, response, next in
-  ...  
+  ...
   next()
 })
 ```

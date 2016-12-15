@@ -25,8 +25,8 @@ import Foundation
 
 // MARK CredentialsGitHub
 
-/// Authentication using GitHub web login with OAuth.
-/// See [GitHub manual](https://developer.github.com/v3/oauth/#web-application-flow)
+/// Authentication using GitHub web login with OAuth2.
+/// See the [GitHub manual](https://developer.github.com/v3/oauth/#web-application-flow)
 /// for more information.
 public class CredentialsGitHub: CredentialsPluginProtocol {
 
@@ -43,7 +43,7 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
     /// User-Agent must be set in order to access GitHub API (i.e., to get user profile).
     /// See [GitHub manual](https://developer.github.com/v3/#user-agent-required)
     /// for more information.
-    public private(set) var userAgent: String
+    public let userAgent: String
 
     /// The name of the plugin.
     public let name = "GitHub"
@@ -51,7 +51,7 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
     /// An indication as to whether the plugin is redirecting or not.
     public let redirecting = true
 
-    /// User profile cache.
+    /// User profile cache; not used in CredentialsGitHub.
     public var usersCache: NSCache<NSString, BaseCacheElement>?
 
     /// A delegate for `UserProfile` manipulation.
@@ -59,9 +59,12 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
 
     /// Initialize a `CredentialsGitHub` instance.
     ///
-    /// - Parameter clientId: The Client ID of the app in the GitHub Developer applications.
-    /// - Parameter clientSecret: The Client Secret of the app in the GitHub Developer applications.
+    /// - Parameter clientId: The Client ID of the app in GitHub Developer applications.
+    /// - Parameter clientSecret: The Client Secret of the app in GitHub Developer applications.
     /// - Parameter callbackUrl: The URL that GitHub redirects back to.
+    /// - Parameter userAgent: The User-Agent value used when calling GitHub APIs. *Optional*
+    /// - Parameter options: A dictionary of plugin specific options. *Optional*. The allowable
+    /// options are listed in `CredentialsGitHubOptions`
     public init (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil, options: [String: Any] = [:]) {
         self.clientId = clientId
         self.clientSecret = clientSecret
@@ -115,7 +118,7 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
                             requestOptions.append(.path("/user"))
                             headers = [String:String]()
                             headers["Accept"] = "application/json"
-                            headers["User-Agent"] = self.userAgent
+                            headers["User-Agent"] = self.userAgent // https://developer.github.com/v3/#user-agent-required
                             headers["Authorization"] = "token \(token)"
                             requestOptions.append(.headers(headers))
 
@@ -182,7 +185,8 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
         }
     }
 
-    // GitHub user profile response format looks like this:
+    /// Generate UserProfile from a dictionary
+    /// GitHub user profile response format looks like this:
     /*
      {
          "login" : "<string>",
@@ -217,6 +221,8 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
          "updated_at" : "<time stamp string>"
      }
      */
+    ///
+    /// - Parameter userDictionary: User profile as a dictionary
     private func createUserProfile(from userDictionary: [String: Any]) -> UserProfile? {
         guard let id = userDictionary["id"] as? UInt64 else {
             return nil
