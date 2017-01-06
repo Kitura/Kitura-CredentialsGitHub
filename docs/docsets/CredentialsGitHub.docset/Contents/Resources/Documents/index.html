@@ -48,6 +48,14 @@
               </li>
             </ul>
           </li>
+          <li class="nav-group-name">
+            <a class="nav-group-name-link" href="Structs.html">Structs</a>
+            <ul class="nav-group-tasks">
+              <li class="nav-group-task">
+                <a class="nav-group-task-link" href="Structs/CredentialsGitHubOptions.html">CredentialsGitHubOptions</a>
+              </li>
+            </ul>
+          </li>
         </ul>
       </nav>
       <article class="main-content">
@@ -57,14 +65,12 @@
             
             <a href='#kitura-credentialsgithub' class='anchor' aria-hidden=true><span class="header-anchor"></span></a><h1 id='kitura-credentialsgithub'>Kitura-CredentialsGitHub</h1>
 
-<p>Plugin for the Credentials framework that authenticate using GitHub</p>
-
 <p><img src="https://img.shields.io/badge/os-Mac%20OS%20X-green.svg?style=flat" alt="Mac OS X">
 <img src="https://img.shields.io/badge/os-linux-green.svg?style=flat" alt="Linux">
 <img src="https://img.shields.io/badge/license-Apache2-blue.svg?style=flat" alt="Apache 2"></p>
 <a href='#summary' class='anchor' aria-hidden=true><span class="header-anchor"></span></a><h2 id='summary'>Summary</h2>
 
-<p>Plugin for <a href="https://github.com/IBM-Swift/Kitura-Credentials">Kitura-Credentials</a> framework that authenticates using the <a href="https://developer.github.com/v3/oauth/#web-application-flow">GitHub web login with OAuth</a>.</p>
+<p>Plugin for <a href="https://github.com/IBM-Swift/Kitura-Credentials">Kitura-Credentials</a> framework that authenticates using the <a href="https://developer.github.com/v3/oauth/#web-application-flow">GitHub web login with OAuth2</a> API.</p>
 <a href='#table-of-contents' class='anchor' aria-hidden=true><span class="header-anchor"></span></a><h2 id='table-of-contents'>Table of Contents</h2>
 
 <ul>
@@ -74,43 +80,52 @@
 </ul>
 <a href='#swift-version' class='anchor' aria-hidden=true><span class="header-anchor"></span></a><h2 id='swift-version'>Swift version</h2>
 
-<p>The latest version of Kitura-CredentialsGitHub requires <strong>Swift 3.0</strong>. You can download this version of the Swift binaries by following this <a href="https://swift.org/download/">link</a>. Compatibility with other Swift versions is not guaranteed.</p>
+<p>The latest version of Kitura-CredentialsGitHub requires <strong>Swift 3</strong>. You can download this version of the Swift binaries by following this <a href="https://swift.org/download/">link</a>. Compatibility with other Swift versions is not guaranteed.</p>
 <a href='#example-of-github-web-login' class='anchor' aria-hidden=true><span class="header-anchor"></span></a><h2 id='example-of-github-web-login'>Example of GitHub web login</h2>
 
-<p>First create an instance of <code>CredentialsGitHub</code> plugin and register it with <code>Credentials</code> framework:
-&ldquo;`swift
-import Credentials
-import CredentialsGitHub</p>
+<p>This guide assumes basic knowledge of <code>Kitura</code> app routing.</p>
 
-<p>let credentials = Credentials()
-let gitCredentials = CredentialsGitHub(clientId: gitClientId, clientSecret: gitClientSecret, callbackUrl: serverUrl + <q>/login/github/callback</q>, userAgent: <q>my-kitura-app</q>)
-credentials.register(gitCredentials)
-&rdquo;<code>
-**Where:**
-- *gitClientId* is the Client ID of your app in your GitHub Developer applications
-- *gitClientSecret* is the Client Secret of your app in your GitHub Developer applications
-- *userAgent* is an optional argument that passes along a User-Agent of your choice on API calls against GitHub. By default,</code>Kitura-CredentialsGitHub` is set as the User-Agent. <a href="https://developer.github.com/v3/#user-agent-required">User-Agent is required when invoking GitHub APIs</a>.</p>
+<p>First, set up the session middleware:</p>
+<pre class="highlight swift"><code><span class="kd">import</span> <span class="kt">KituraSession</span>
 
-<p><strong>Note:</strong> The <em>callbackUrl</em> parameter above is used to tell the GitHub web login page where the user&rsquo;s browser should be redirected when the login is successful. It should be a URL handled by the server you are writing.
-Specify where to redirect non-authenticated requests:
-<code>swift
-credentials.options[&quot;failureRedirect&quot;] = &quot;/login/github&quot;
-</code></p>
+<span class="n">router</span><span class="o">.</span><span class="nf">all</span><span class="p">(</span><span class="nv">middleware</span><span class="p">:</span> <span class="kt">Session</span><span class="p">(</span><span class="nv">secret</span><span class="p">:</span> <span class="s">"Very very secret..."</span><span class="p">))</span>
+</code></pre>
 
-<p>Connect <code>credentials</code> middleware to requests to <code>/private</code>:</p>
+<p>Create an instance of <code>CredentialsGitHub</code> plugin and register it with <code>Credentials</code> framework:</p>
+<pre class="highlight swift"><code><span class="kd">import</span> <span class="kt">Credentials</span>
+<span class="kd">import</span> <span class="kt">CredentialsGitHub</span>
+
+<span class="k">let</span> <span class="nv">credentials</span> <span class="o">=</span> <span class="kt">Credentials</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">gitCredentials</span> <span class="o">=</span> <span class="kt">CredentialsGitHub</span><span class="p">(</span><span class="nv">clientId</span><span class="p">:</span> <span class="n">gitClientId</span><span class="p">,</span> <span class="nv">clientSecret</span><span class="p">:</span> <span class="n">gitClientSecret</span><span class="p">,</span> <span class="nv">callbackUrl</span><span class="p">:</span> <span class="n">serverUrl</span> <span class="o">+</span> <span class="s">"/login/github/callback"</span><span class="p">,</span> <span class="nv">userAgent</span><span class="p">:</span> <span class="s">"my-kitura-app"</span><span class="p">,</span> <span class="nv">options</span><span class="p">:</span> <span class="p">[</span><span class="s">"scopes"</span><span class="p">:</span> <span class="p">[</span><span class="s">"user:email"</span><span class="p">]])</span>
+<span class="n">credentials</span><span class="o">.</span><span class="nf">register</span><span class="p">(</span><span class="n">gitCredentials</span><span class="p">)</span>
+</code></pre>
+
+<p><strong>Where:</strong></p>
+
+<ul>
+<li><em>gitClientId</em> is the Client ID of your app in your GitHub Developer application settings</li>
+<li><em>gitClientSecret</em> is the Client Secret of your app in your GitHub Developer application settings</li>
+<li><em>callbackUrl</em> is used to tell the GitHub web login page where the user&rsquo;s browser should be redirected when the login is successful. It should be a URL handled by the server you are writing.</li>
+<li><em>userAgent</em> is an optional argument that passes along a User-Agent of your choice on API calls against GitHub. By default, <code>Kitura-CredentialsGitHub</code> is set as the <code>User-Agent</code> header. <a href="https://developer.github.com/v3/#user-agent-required"><code>User-Agent</code> header is required when invoking GitHub APIs</a>.</li>
+<li><em>options</em> is an optional dictionary (<code>[String: Any]</code>); the allowable options are listed in <code>CredentialsGitHubOptions</code></li>
+</ul>
+
+<p>Next, specify where to redirect non-authenticated requests:</p>
+<pre class="highlight swift"><code><span class="n">credentials</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s">"failureRedirect"</span><span class="p">]</span> <span class="o">=</span> <span class="s">"/login/github"</span>
+</code></pre>
+
+<p>Connect <code>credentials</code> middleware to handle requests to a protected path on the server, such as <code>/private</code>:</p>
 <pre class="highlight swift"><code><span class="n">router</span><span class="o">.</span><span class="nf">all</span><span class="p">(</span><span class="s">"/private"</span><span class="p">,</span> <span class="nv">middleware</span><span class="p">:</span> <span class="n">credentials</span><span class="p">)</span>
 <span class="n">router</span><span class="o">.</span><span class="nf">get</span><span class="p">(</span><span class="s">"/private/data"</span><span class="p">,</span> <span class="nv">handler</span><span class="p">:</span> <span class="p">{</span> <span class="n">request</span><span class="p">,</span> <span class="n">response</span><span class="p">,</span> <span class="n">next</span> <span class="k">in</span>
-  <span class="o">...</span>  
+  <span class="o">...</span>
   <span class="nf">next</span><span class="p">()</span>
 <span class="p">})</span>
 </code></pre>
 
 <p>And call <code>authenticate</code> to login with GitHub and to handle the redirect (callback) from the GitHub login web page after a successful login:</p>
-<pre class="highlight swift"><code><span class="n">router</span><span class="o">.</span><span class="nf">get</span><span class="p">(</span><span class="s">"/login/github"</span><span class="p">,</span>
-<span class="nv">handler</span><span class="p">:</span> <span class="n">credentials</span><span class="o">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="n">gitCredentials</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+<pre class="highlight swift"><code><span class="n">router</span><span class="o">.</span><span class="nf">get</span><span class="p">(</span><span class="s">"/login/github"</span><span class="p">,</span> <span class="nv">handler</span><span class="p">:</span> <span class="n">credentials</span><span class="o">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="n">gitCredentials</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
 
-<span class="n">router</span><span class="o">.</span><span class="nf">get</span><span class="p">(</span><span class="s">"/login/github/callback"</span><span class="p">,</span>
-<span class="nv">handler</span><span class="p">:</span> <span class="n">credentials</span><span class="o">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="n">gitCredentials</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+<span class="n">router</span><span class="o">.</span><span class="nf">get</span><span class="p">(</span><span class="s">"/login/github/callback"</span><span class="p">,</span> <span class="nv">handler</span><span class="p">:</span> <span class="n">credentials</span><span class="o">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="n">gitCredentials</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
 </code></pre>
 <a href='#license' class='anchor' aria-hidden=true><span class="header-anchor"></span></a><h2 id='license'>License</h2>
 
@@ -123,8 +138,8 @@ credentials.options[&quot;failureRedirect&quot;] = &quot;/login/github&quot;
       </article>
     </div>
     <section class="footer">
-      <p>&copy; 2016 <a class="link" href="" target="_blank" rel="external">IBM</a>. All rights reserved. (Last updated: 2016-09-22)</p>
-      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.7.0</a>, a <a class="link" href="http://realm.io" target="_blank" rel="external">Realm</a> project.</p>
+      <p>&copy; 2016 <a class="link" href="" target="_blank" rel="external">IBM</a>. All rights reserved. (Last updated: 2016-12-15)</p>
+      <p>Generated by <a class="link" href="https://github.com/realm/jazzy" target="_blank" rel="external">jazzy ♪♫ v0.7.3</a>, a <a class="link" href="http://realm.io" target="_blank" rel="external">Realm</a> project.</p>
     </section>
   </body>
 </div>
