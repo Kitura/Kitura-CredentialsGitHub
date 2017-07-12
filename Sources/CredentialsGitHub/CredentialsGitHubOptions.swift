@@ -1,5 +1,5 @@
 /**
- * Copyright IBM Corporation 2016
+ * Copyright IBM Corporation 2016, 2017
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
  * limitations under the License.
  **/
 
-// MARK CredentialsFacebookOptions
-/// A list of options for authentication with Facebook.
+// MARK CredentialsGitHubOptions
+/// A list of options for authentication with GitHub.
 public struct CredentialsGitHubOptions {
     /// [GitHub access token scopes](https://developer.github.com/v3/oauth/#scopes)
     public static let scopes = "scopes"
