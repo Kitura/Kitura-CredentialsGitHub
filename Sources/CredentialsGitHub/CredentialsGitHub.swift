@@ -1,5 +1,5 @@
 /**
- * Copyright IBM Corporation 2016
+ * Copyright IBM Corporation 2016, 2017
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -218,7 +218,7 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
      }
      */
     private func createUserProfile(from userDictionary: [String: Any]) -> UserProfile? {
-        guard let id = userDictionary["id"] as? UInt64 else {
+        guard let id = userDictionary["id"] as? Int else {
             return nil
         }
 
