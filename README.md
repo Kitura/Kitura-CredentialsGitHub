@@ -14,7 +14,7 @@ Plugin for [Kitura-Credentials](https://github.com/IBM-Swift/Kitura-Credentials)
 * [License](#license)
 
 ## Swift version
-The latest version of Kitura-CredentialsGitHub requires **Swift 4.0.3**. You can download this version of the Swift binaries by following this [link](https://swift.org/download/). Compatibility with other Swift versions is not guaranteed.
+The latest version of Kitura-CredentialsGitHub requires **Swift 4.0** or newer. You can download this version of the Swift binaries by following this [link](https://swift.org/download/). Compatibility with other Swift versions is not guaranteed.
 
 ## Example of GitHub web login
 This guide assumes basic knowledge of `Kitura` app routing.
