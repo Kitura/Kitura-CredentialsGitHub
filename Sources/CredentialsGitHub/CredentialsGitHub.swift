@@ -18,9 +18,6 @@ import Kitura
 import KituraNet
 import LoggerAPI
 import Credentials
-
-import SwiftyJSON
-
 import Foundation
 
 // MARK CredentialsGitHub
@@ -106,8 +103,8 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
                     do {
                         var body = Data()
                         try fbResponse.readAllData(into: &body)
-                        var jsonBody = JSON(data: body)
-                        if let token = jsonBody["access_token"].string {
+                        if var jsonBody = try JSONSerialization.jsonObject(with: body, options: []) as? [String : Any],
+                        let token = jsonBody["access_token"] as? String {
                             requestOptions = []
                             requestOptions.append(.schema("https://"))
                             requestOptions.append(.hostname("api.github.com"))
@@ -124,13 +121,10 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
                                     do {
                                         body = Data()
                                         try profileResponse.readAllData(into: &body)
-                                        jsonBody = JSON(data: body)
-
-                                        if let userDictionary = jsonBody.dictionaryObject,
-                                            let userProfile = self.createUserProfile(from: userDictionary) {
-
+                                        if let userDictionary = try JSONSerialization.jsonObject(with: body, options: []) as? [String : Any],
+                                        let userProfile = self.createUserProfile(from: userDictionary) {
                                             if let delegate = self.userProfileDelegate {
-                                                delegate.update(userProfile: userProfile, from: jsonBody.dictionaryValue)
+                                                delegate.update(userProfile: userProfile, from: userDictionary)
                                             }
 
                                             onSuccess(userProfile)

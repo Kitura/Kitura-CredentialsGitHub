@@ -2,3 +2,5 @@
 .build
 build
 Package.resolved
+Packages/
+.DS_Store
