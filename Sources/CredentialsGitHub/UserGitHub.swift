@@ -161,7 +161,12 @@ public final class UserGitHub: TypedCredentialsPluginProtocol {
             }
 
             do {
-                try response.redirect("https://github.com/login/oauth/authorize?client_id=\(clientId)&redirect_uri=\(callbackUrl)&response_type=code\(scopeParameters)")
+                // We want to be able to redirect the user back to the original URL they intended to access
+                // and to do this, we will store the path of their initial request in the OAuth state query
+                // param which is designed for this purpose. Upon successful query we will send the user a
+                // redirect to this location.
+                let originalPath = request.urlURL.path
+                try response.redirect("https://github.com/login/oauth/authorize?client_id=\(clientId)&redirect_uri=\(callbackUrl)&response_type=code&state=\(originalPath)\(scopeParameters)")
                 inProgress()
             }
             catch {
