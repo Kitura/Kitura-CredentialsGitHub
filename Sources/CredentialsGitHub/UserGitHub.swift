@@ -57,12 +57,28 @@ public final class UserGitHub: TypedCredentialsPluginProtocol {
     /// User profile cache.
     public static var usersCache: NSCache<NSString, BaseCacheElement>?
     
-    public static func setup (clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil, options: [String: Any] = [:]) {
+    public static func setup (router: Router, clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil, options: [String: Any] = [:]) {
         UserGitHub.clientId = clientId
         UserGitHub.clientSecret = clientSecret
         UserGitHub.callbackUrl = callbackUrl
         UserGitHub.scopes = options[CredentialsGitHubOptions.scopes] as? [String] ?? []
         UserGitHub.userAgent = userAgent ?? "Kitura-CredentialsGitHub"
+        
+        guard let callbackPath = URL(string: callbackUrl)?.path else {
+            Log.error("Unable to parse '\(callbackUrl)' as a URL")
+            return
+        }
+        // Generate a route that handles the callback from the GitHub OAuth service and redirects
+        // the user to their original destination, encoded in the OAuth state parameter.
+        router.get(callbackPath) { request, response, next in
+            if let redirectPath = request.queryParameters["state"], let code = request.queryParameters["code"] {
+                // TODO: if sessions in use, store the code in the session instead?
+                try response.redirect(redirectPath + "?code=\(code)")
+            } else {
+                response.status(.badRequest).send("A required OAuth param is missing.")
+            }
+            next()
+        }
     }
 
     /// Authenticate incoming request using GitHub web login with OAuth.
