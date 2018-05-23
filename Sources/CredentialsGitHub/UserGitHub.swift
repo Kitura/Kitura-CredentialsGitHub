@@ -49,14 +49,14 @@ public final class UserGitHub: TypedCredentialsPluginProtocol {
     public static var userAgent: String = "Kitura-CredentialsGitHub"
 
     /// The name of the plugin.
-    public static let name = "GitHub"
+    public static let pluginName = "GitHub"
 
     /// An indication as to whether the plugin is redirecting or not.
     public static var redirecting = true
 
     /// User profile cache.
-    public static var usersCache: NSCache<NSString, BaseCacheElement>?
-    
+    public static var usersCache = NSCache<NSString, BaseCacheElement>()
+
     public static func setup (router: Router, clientId: String, clientSecret: String, callbackUrl: String, userAgent: String?=nil, options: [String: Any] = [:]) {
         UserGitHub.clientId = clientId
         UserGitHub.clientSecret = clientSecret
@@ -103,6 +103,7 @@ public final class UserGitHub: TypedCredentialsPluginProtocol {
         }
         if let code = request.queryParameters["code"] {
             // query contains code: exchange code for access token
+            request.queryParameters["code"] = nil
             var requestOptions: [ClientRequest.Options] = []
             requestOptions.append(.schema("https://"))
             requestOptions.append(.hostname("github.com"))
@@ -142,7 +143,7 @@ public final class UserGitHub: TypedCredentialsPluginProtocol {
                                         }
                                     }
                                     catch {
-                                        Log.error("Failed to read \(UserGitHub.name) response")
+                                        Log.error("Failed to read \(UserGitHub.pluginName) response")
                                     }
                                 }
                                 else {
@@ -153,7 +154,7 @@ public final class UserGitHub: TypedCredentialsPluginProtocol {
                         }
                     }
                     catch {
-                        Log.error("Failed to read \(UserGitHub.name) response")
+                        Log.error("Failed to read \(UserGitHub.pluginName) response")
                     }
                 }
                 else {
@@ -186,7 +187,7 @@ public final class UserGitHub: TypedCredentialsPluginProtocol {
                 inProgress()
             }
             catch {
-                Log.error("Failed to redirect to \(name) login page")
+                Log.error("Failed to redirect to \(pluginName) login page")
             }
         }
     }
