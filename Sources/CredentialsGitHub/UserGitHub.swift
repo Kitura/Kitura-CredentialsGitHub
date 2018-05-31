@@ -25,13 +25,7 @@ import Foundation
 /// Authentication using GitHub web login with OAuth.
 /// See [GitHub manual](https://developer.github.com/v3/oauth/#web-application-flow)
 /// for more information.
-public final class UserGitHub: TypedCredentialsPluginProtocol {
-    
-    public static var options: [String : Any] = [:]
-    
-    public static func describe() -> String {
-        return "github authenticated"
-    }
+public final class UserGitHub: TypeSafeCredentialsPluginProtocol {
     
     private static var clientId: String?
 
@@ -50,9 +44,6 @@ public final class UserGitHub: TypedCredentialsPluginProtocol {
 
     /// The name of the plugin.
     public static let pluginName = "GitHub"
-
-    /// An indication as to whether the plugin is redirecting or not.
-    public static var redirecting = true
 
     /// User profile cache.
     public static var usersCache = NSCache<NSString, BaseCacheElement>()
