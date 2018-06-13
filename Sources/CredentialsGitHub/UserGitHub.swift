@@ -25,7 +25,7 @@ import Foundation
 /// Authentication using GitHub web login with OAuth.
 /// See [GitHub manual](https://developer.github.com/v3/oauth/#web-application-flow)
 /// for more information.
-public final class UserGitHub: TypeSafeCredentialsPluginProtocol {
+public final class UserGitHub/**: TypeSafeCredentials*/ {
     
     private static var clientId: String?
 
