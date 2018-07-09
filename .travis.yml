@@ -14,8 +14,16 @@ matrix:
       dist: trusty
       sudo: required
     - os: osx
-      osx_image: xcode9.2
+      osx_image: xcode9.4
       sudo: required
+    - os: linux
+      dist: trusty
+      sudo: required
+      env: swift-4.2-DEVELOPMENT-SNAPSHOT-2018-07-08-a
+    - os: osx
+      osx_image: xcode9.4
+      sudo: required
+      env: swift-4.2-DEVELOPMENT-SNAPSHOT-2018-06-04-a
 
 before_install:
   - git clone https://github.com/IBM-Swift/Package-Builder.git
