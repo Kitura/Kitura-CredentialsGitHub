@@ -103,7 +103,7 @@ public class CredentialsGitHub: CredentialsPluginProtocol {
                     do {
                         var body = Data()
                         try fbResponse.readAllData(into: &body)
-                        if var jsonBody = try JSONSerialization.jsonObject(with: body, options: []) as? [String : Any],
+                        if let jsonBody = try JSONSerialization.jsonObject(with: body, options: []) as? [String : Any],
                         let token = jsonBody["access_token"] as? String {
                             requestOptions = []
                             requestOptions.append(.schema("https://"))
