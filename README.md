@@ -1,6 +1,6 @@
 <p align="center">
     <a href="http://kitura.io/">
-        <img src="https://raw.githubusercontent.com/IBM-Swift/Kitura/master/Sources/Kitura/resources/kitura-bird.svg?sanitize=true" height="100" alt="Kitura">
+        <img src="https://raw.githubusercontent.com/Kitura/Kitura/master/Sources/Kitura/resources/kitura-bird.svg?sanitize=true" height="100" alt="Kitura">
     </a>
 </p>
 
@@ -9,8 +9,8 @@
     <a href="http://www.kitura.io/">
     <img src="https://img.shields.io/badge/docs-kitura.io-1FBCE4.svg" alt="Docs">
     </a>
-    <a href="https://travis-ci.org/IBM-Swift/Kitura-CredentialsGitHub">
-    <img src="https://travis-ci.org/IBM-Swift/Kitura-CredentialsGitHub.svg?branch=master" alt="Build Status - Master">
+    <a href="https://travis-ci.org/Kitura/Kitura-CredentialsGitHub">
+    <img src="https://travis-ci.org/Kitura/Kitura-CredentialsGitHub.svg?branch=master" alt="Build Status - Master">
     </a>
     <img src="https://img.shields.io/badge/os-macOS-green.svg?style=flat" alt="macOS">
     <img src="https://img.shields.io/badge/os-linux-green.svg?style=flat" alt="Linux">
@@ -25,7 +25,7 @@
 Plugin for the Credentials framework that authenticate using GitHub
 
 ## Summary
-Plugin for [Kitura-Credentials](https://github.com/IBM-Swift/Kitura-Credentials) framework that authenticates using the [GitHub web login with OAuth2](https://developer.github.com/v3/oauth/#web-application-flow) API.
+Plugin for [Kitura-Credentials](https://github.com/Kitura/Kitura-Credentials) framework that authenticates using the [GitHub web login with OAuth2](https://developer.github.com/v3/oauth/#web-application-flow) API.
 
 ## Table of Contents
 * [Swift version](#swift-version)
